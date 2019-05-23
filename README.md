@@ -9,8 +9,7 @@ Here are the SQL commands to prepare the database on a mysql server, assuming yo
 ```
 CREATE DATABASE mymonitoring;
 GRANT ALL ON mymonitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secretpassword';
-CREATE TABLE mymonitoring.monitoring ( id INT(1), mytime INT(13) );
-INSERT INTO mymonitoring.monitoring (id, mytime) VALUES (1, 1421421409); (current timestamp)
+CREATE TABLE mymonitoring.monitoring ( host VARCHAR(100), mytime INT(13) );
 ```
 
-Every time the plugin runs, the "mytime" field of ID 1 of the table will be updated with the current timestamp.
+Every time the plugin runs, the "mytime" column of the row matching the monitoring host will be updated with the current timestamp.
