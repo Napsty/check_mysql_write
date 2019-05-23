@@ -17,7 +17,6 @@
 # CREATE DATABASE mymonitoring;
 # GRANT ALL ON mymonitoring.* TO 'monitoring'@'%';
 # CREATE TABLE mymonitoring.monitoring ( host VARCHAR(100), mytime INT(13) );
-# INSERT INTO mymonitoring.monitoring (host, mytime) VALUES (1, 1558596177); (current timestamp)
 
 # Every time the plugin runs, the "mytime" column of the row matching the host will be updated with the current timestamp.
 #########################################################################
