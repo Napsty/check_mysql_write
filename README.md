@@ -8,7 +8,7 @@ Here are the SQL commands to prepare the database on a mysql server, assuming yo
 
 ```
 CREATE DATABASE mymonitoring;
-GRANT ALL ON mymonitoring.* TO 'monitoring'@'%';
+GRANT ALL ON mymonitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secretpassword';
 CREATE TABLE mymonitoring.monitoring ( id INT(1), mytime INT(13) );
 INSERT INTO mymonitoring.monitoring (id, mytime) VALUES (1, 1421421409); (current timestamp)
 ```
