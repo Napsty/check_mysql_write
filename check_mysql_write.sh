@@ -57,7 +57,6 @@ done
 #########################################################################
 # Check if we already have a row for our monitoring host where this script runs on
 hostcheck=$(mysql -h ${host} -P ${port} -u ${user} --password=${password} -D $database -Bse "SELECT COUNT(host) FROM monitoring WHERE host = '$(hostname)'")
-echo "Debug: $hostcheck"
 if [[ $hostcheck -eq 0 ]]
   then # We need to create the first row entry for this host
   mysql -h ${host} -P ${port} -u ${user} --password=${password} -D $database -e "INSERT INTO monitoring (host, mytime) VALUES ('$(hostname)', $curtime)"
