@@ -5,6 +5,7 @@
 # History:                                                                       #
 # 20150119   Created script                                                      #
 # 20190523   Adapt script for multi-master clusters (use different row per host) #
+# 20190821   Do not use password in mysql cli, use env variable                  #
 ##################################################################################
 # Usage: ./check_mysql_write.sh -H dbhost -P port -u dbuser -p dbpass -d database 
 ##################################################################################
@@ -45,7 +46,7 @@ do
         H)      host=${OPTARG};;
         P)      port=${OPTARG};;
         u)      user=${OPTARG};;
-        p)      password=${OPTARG};;
+        p)      password=${OPTARG}; export MYSQL_PWD=$password;;
         d)      database=${OPTARG};;
         \?)     echo "Wrong option given. Please use options -H for host, -P for port, -u for user, -p for password, -d for database and -q for query"
                 exit 1
@@ -56,20 +57,20 @@ done
 # Connect to the DB server and store output in vars
 #########################################################################
 # Check if we already have a row for our monitoring host where this script runs on
-hostcheck=$(mysql -h ${host} -P ${port} -u ${user} --password=${password} -D $database -Bse "SELECT COUNT(host) FROM monitoring WHERE host = '$(hostname)'")
+hostcheck=$(mysql -h ${host} -P ${port} -u ${user} -D $database -Bse "SELECT COUNT(host) FROM monitoring WHERE host = '$(hostname)'")
 if [[ $hostcheck -eq 0 ]]
   then # We need to create the first row entry for this host
-  mysql -h ${host} -P ${port} -u ${user} --password=${password} -D $database -e "INSERT INTO monitoring (host, mytime) VALUES ('$(hostname)', $curtime)"
+  mysql -h ${host} -P ${port} -u ${user} -D $database -e "INSERT INTO monitoring (host, mytime) VALUES ('$(hostname)', $curtime)"
   result=$?
   else # Our host already has a row, update the row
-  mysql -h ${host} -P ${port} -u ${user} --password=${password} -D $database -e "UPDATE monitoring SET mytime=$curtime WHERE host = '$(hostname)'"
+  mysql -h ${host} -P ${port} -u ${user} -D $database -e "UPDATE monitoring SET mytime=$curtime WHERE host = '$(hostname)'"
   result=$?
 fi
 
 if [[ $result -gt 0 ]]; then
         echo -e "CRITICAL: There was an error trying to write into ${database}.monitoring.  Do a manual check."
         exit ${STATE_CRITICAL}
-else echo -e "OK: Write query successful (UPDATE monitoring SET mytime=$curtime WHERE host='$(hostname)')"
+else echo -e "OK: Write query successful (UPDATE ${database}.monitoring SET mytime=$curtime WHERE host='$(hostname)')"
         exit ${STATE_OK}
 fi
 
