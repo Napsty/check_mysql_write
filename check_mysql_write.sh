@@ -17,7 +17,7 @@
 # assuming you name the database 'mymonitoring':
 
 # CREATE DATABASE mymonitoring;
-# GRANT ALL ON mymonitoring.* TO 'monitoring'@'%';
+# GRANT ALL ON mymonitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secret';
 # CREATE TABLE mymonitoring.monitoring ( host VARCHAR(100), mytime INT(13) );
 
 # Every time the plugin runs, the "mytime" column of the row matching the host will be updated with the current timestamp.
@@ -53,7 +53,7 @@ help() {
   -d => (optional) Database name (defaults to 'monitoring')\n\n
   To prepare the database for the check, create the database (here 'monitoring') and create a monitoring user:\n
   CREATE DATABASE monitoring;
-  GRANT ALL ON monitoring.* TO 'monitoring'@'%';
+  GRANT ALL ON monitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secret';
   CREATE TABLE monitoring.monitoring ( host VARCHAR(100), mytime INT(13) );\n"
   exit ${STATE_UNKNOWN}
 }
