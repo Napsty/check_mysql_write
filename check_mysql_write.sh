@@ -6,8 +6,9 @@
 # 20150119   Created script                                                      #
 # 20190523   Adapt script for multi-master clusters (use different row per host) #
 # 20190821   Do not use password in mysql cli, use env variable                  #
+# 20200903   Add help+version, define default database                           #
 ##################################################################################
-# Usage: ./check_mysql_write.sh -H dbhost -P port -u dbuser -p dbpass -d database 
+# Usage: ./check_mysql_write.sh -H dbhost [-P port] -u dbuser -p dbpass [-d database ]
 ##################################################################################
 # How does it work?
 # The plugin will connect to the given MySQL server and awaits a database given by -d parameter.
@@ -27,6 +28,8 @@ STATE_CRITICAL=2        # define the exit code if status is Critical
 STATE_UNKNOWN=3         # define the exit code if status is Unknown
 curtime=`date +%s`
 port=3306
+database="monitoring"
+version="1.4"
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin # Set path
 
 for cmd in mysql awk grep [
@@ -38,6 +41,28 @@ do
  fi
 done
 
+# Show help
+#########################################################################
+help() {
+  echo -e "check_mysql_write ${version} (c) 2015-2020 Claudio Kuenzler\n
+  Usage: $0 -H MySQLHost [-P MySQLPort] -u MySQLUser -p MySQLPassword [-d MySQLDBName ]\n\n
+  -H => Hostname or IP address of DB Server (use localhost for local socket connection)
+  -P => (optional) MySQL port
+  -u => MySQL username
+  -p => MySQL password
+  -d => (optional) Database name (defaults to 'monitoring')\n\n
+  To prepare the database for the check, create the database (here 'monitoring') and create a monitoring user:\n
+  CREATE DATABASE monitoring;
+  GRANT ALL ON monitoring.* TO 'monitoring'@'%';
+  CREATE TABLE monitoring.monitoring ( host VARCHAR(100), mytime INT(13) );\n"
+  exit ${STATE_UNKNOWN}
+}
+
+if [ "${1}" = "--help" -o "${#}" = "0" ];
+       then help
+fi
+
+
 # Important given variables for the DB-Connect
 #########################################################################
 while getopts "H:P:u:p:d:" Input;
@@ -48,11 +73,10 @@ do
         u)      user=${OPTARG};;
         p)      password=${OPTARG}; export MYSQL_PWD=$password;;
         d)      database=${OPTARG};;
-        \?)     echo "Wrong option given. Please use options -H for host, -P for port, -u for user, -p for password, -d for database and -q for query"
-                exit 1
-                ;;
+        \?)     help;;
         esac
 done
+
 
 # Connect to the DB server and store output in vars
 #########################################################################
