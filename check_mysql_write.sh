@@ -7,6 +7,7 @@
 # 20190523   Adapt script for multi-master clusters (use different row per host) #
 # 20190821   Do not use password in mysql cli, use env variable                  #
 # 20200903   Add help+version, define default database                           #
+# 20210502   Add Primary Key to table (required by Galera) fixes issue #3        #
 ##################################################################################
 # Usage: ./check_mysql_write.sh -H dbhost [-P port] -u dbuser -p dbpass [-d database ]
 ##################################################################################
@@ -14,11 +15,11 @@
 # The plugin will connect to the given MySQL server and awaits a database given by -d parameter.
 # Within this database, a table "monitoring" must exist.
 # Here are the SQL commands to prepare the database on a mysql server,
-# assuming you name the database 'mymonitoring':
+# assuming you name the database 'monitoring':
 
-# CREATE DATABASE mymonitoring;
-# GRANT ALL ON mymonitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secret';
-# CREATE TABLE mymonitoring.monitoring ( host VARCHAR(100), mytime INT(13) );
+# CREATE DATABASE monitoring;
+# GRANT ALL ON monitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secret';
+# CREATE TABLE monitoring.monitoring ( id INT(3) NOT NULL AUTO_INCREMENT, host VARCHAR(100), mytime INT(13), PRIMARY KEY (id) );
 
 # Every time the plugin runs, the "mytime" column of the row matching the host will be updated with the current timestamp.
 #########################################################################
@@ -29,7 +30,7 @@ STATE_UNKNOWN=3         # define the exit code if status is Unknown
 curtime=`date +%s`
 port=3306
 database="monitoring"
-version="1.4"
+version="1.5"
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin # Set path
 
 for cmd in mysql awk grep [
