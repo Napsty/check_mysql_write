@@ -46,7 +46,7 @@ done
 # Show help
 #########################################################################
 help() {
-  echo -e "check_mysql_write ${version} (c) 2015-2021 Claudio Kuenzler\n
+  echo -e "check_mysql_write ${version} (c) 2015-2022 Claudio Kuenzler\n
   Usage: $0 -H MySQLHost [-P MySQLPort] -u MySQLUser -p MySQLPassword [-d MySQLDBName ]\n\n
   -H => Hostname or IP address of DB Server (use localhost for local socket connection)
   -P => (optional) MySQL port
