@@ -1,7 +1,7 @@
 # check_mysql_write
 A simple monitoring plugin to check if MySQL/MariaDB host can do write operations
 
-##How does it work?
+## How does it work?
 
 The plugin will connect to the given MySQL server and database given by -d parameter.
 Within this database, a table "monitoring" must exist.
