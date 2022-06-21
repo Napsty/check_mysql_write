@@ -8,6 +8,7 @@
 # 20190821   Do not use password in mysql cli, use env variable                  #
 # 20200903   Add help+version, define default database                           #
 # 20210502   Add Primary Key to table (required by Galera) fixes issue #3        #
+# 20220621   Create monitoring table if it doesnt exist                          #
 ##################################################################################
 # Usage: ./check_mysql_write.sh -H dbhost [-P port] -u dbuser -p dbpass [-d database ]
 ##################################################################################
@@ -30,7 +31,7 @@ STATE_UNKNOWN=3         # define the exit code if status is Unknown
 curtime=`date +%s`
 port=3306
 database="monitoring"
-version="1.5"
+version="1.6"
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin # Set path
 
 for cmd in mysql awk grep [
@@ -55,7 +56,7 @@ help() {
   To prepare the database for the check, create the database (here 'monitoring') and create a monitoring user:\n
   CREATE DATABASE monitoring;
   GRANT ALL ON monitoring.* TO 'monitoring'@'%' IDENTIFIED BY 'secret';
-  CREATE TABLE monitoring.monitoring ( host VARCHAR(100), mytime INT(13) );\n"
+  CREATE TABLE monitoring.monitoring ( id INT(3) NOT NULL AUTO_INCREMENT, host VARCHAR(100), mytime INT(13), PRIMARY KEY (id) );\n"
   exit ${STATE_UNKNOWN}
 }
 
@@ -82,12 +83,13 @@ done
 # Connect to the DB server and store output in vars
 #########################################################################
 # Check if we already have a row for our monitoring host where this script runs on
-hostcheck=$(mysql -h ${host} -P ${port} -u ${user} -D $database -Bse "SELECT COUNT(host) FROM monitoring WHERE host = '$(hostname)'")
-if [[ $hostcheck -eq 0 ]]
-  then # We need to create the first row entry for this host
+hostcheck=$(mysql -h ${host} -P ${port} -u ${user} -D $database -Bse "SELECT COUNT(host) FROM monitoring WHERE host = '$(hostname)'" 2>&1)
+if [[ "$hostcheck" =~ "ERROR 1146" ]]; then # Table does not exist yet
+  mysql -h ${host} -P ${port} -u ${user} -D $database -e "CREATE TABLE monitoring ( id INT(3) NOT NULL AUTO_INCREMENT, host VARCHAR(100), mytime INT(13), PRIMARY KEY (id) );"
+elif [[ $hostcheck -eq 0 ]]; then # We need to create the first row entry for this host
   mysql -h ${host} -P ${port} -u ${user} -D $database -e "INSERT INTO monitoring (host, mytime) VALUES ('$(hostname)', $curtime)"
   result=$?
-  else # Our host already has a row, update the row
+else # Our host already has a row, update the row
   mysql -h ${host} -P ${port} -u ${user} -D $database -e "UPDATE monitoring SET mytime=$curtime WHERE host = '$(hostname)'"
   result=$?
 fi
